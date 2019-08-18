@@ -60,6 +60,9 @@ func init() {
 		db_user = "root"
 	}
 	db_password := os.Getenv("ISUBATA_DB_PASSWORD")
+	if db_password == "" {
+		db_password = "root"
+	}
 	if db_password != "" {
 		db_password = ":" + db_password
 	}
@@ -209,6 +212,8 @@ func getInitialize(c echo.Context) error {
 	db.MustExec("DELETE FROM channel WHERE id > 10")
 	db.MustExec("DELETE FROM message WHERE id > 10000")
 	db.MustExec("DELETE FROM haveread")
+	_, err := db.Exec("ALTER TABLE image ADD INDEX ( name )")
+	fmt.Println(err)
 	return c.String(204, "")
 }
 
