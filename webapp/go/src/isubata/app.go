@@ -212,8 +212,9 @@ func getInitialize(c echo.Context) error {
 	db.MustExec("DELETE FROM channel WHERE id > 10")
 	db.MustExec("DELETE FROM message WHERE id > 10000")
 	db.MustExec("DELETE FROM haveread")
-	_, err := db.Exec("ALTER TABLE image ADD INDEX ( name )")
-	fmt.Println(err)
+	db.Exec("ALTER TABLE image ADD INDEX ( name )")
+	db.Exec("ALTER TABLE message ADD INDEX ( channel_id )")
+	db.Exec("ALTER TABLE message ADD INDEX ( id, channel_id )")
 	return c.String(204, "")
 }
 
