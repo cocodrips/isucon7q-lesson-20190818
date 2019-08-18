@@ -176,6 +176,7 @@ redirect:
 
 const LettersAndDigits = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
+// TODO 遅そう
 func randomString(n int) string {
 	b := make([]byte, n)
 	z := len(LettersAndDigits)
@@ -230,6 +231,7 @@ type ChannelInfo struct {
 	CreatedAt   time.Time `db:"created_at"`
 }
 
+// TODO selectは、id, descriptionだけにする
 func getChannel(c echo.Context) error {
 	user, err := ensureLogin(c)
 	if user == nil {
@@ -381,6 +383,7 @@ func getMessage(c echo.Context) error {
 		return err
 	}
 
+	// TODO これ100件も必要なのかしら
 	messages, err := queryMessages(chanID, lastID)
 	if err != nil {
 		return err
@@ -533,6 +536,7 @@ func getHistory(c echo.Context) error {
 	}
 
 	channels := []ChannelInfo{}
+	// TODO channelを全備引いてるのやめたい
 	err = db.Select(&channels, "SELECT * FROM channel ORDER BY id")
 	if err != nil {
 		return err
@@ -555,6 +559,7 @@ func getProfile(c echo.Context) error {
 	}
 
 	channels := []ChannelInfo{}
+	// TODO channel全部引いてるのやめたい
 	err = db.Select(&channels, "SELECT * FROM channel ORDER BY id")
 	if err != nil {
 		return err
@@ -682,6 +687,7 @@ func postProfile(c echo.Context) error {
 	return c.Redirect(http.StatusSeeOther, "/")
 }
 
+// TODO おもすぎる。DBから画像を引き剥がす必要あり。
 func getIcon(c echo.Context) error {
 	var name string
 	var data []byte
