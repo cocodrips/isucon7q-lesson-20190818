@@ -248,7 +248,7 @@ func getChannel(c echo.Context) error {
 		return err
 	}
 	channels := []ChannelInfo{}
-	err = db.Select(&channels, "SELECT id, description FROM channel ORDER BY id")
+	err = db.Select(&channels, "SELECT id, name, description FROM channel ORDER BY id")
 	if err != nil {
 		return err
 	}
