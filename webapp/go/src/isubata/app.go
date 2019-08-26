@@ -179,7 +179,7 @@ redirect:
 
 const LettersAndDigits = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
-// TODO 遅そう
+// TODO 遅そう -> 問題ないレベルっぽかった
 func randomString(n int) string {
 	b := make([]byte, n)
 	z := len(LettersAndDigits)
@@ -248,7 +248,7 @@ func getChannel(c echo.Context) error {
 		return err
 	}
 	channels := []ChannelInfo{}
-	err = db.Select(&channels, "SELECT * FROM channel ORDER BY id")
+	err = db.Select(&channels, "SELECT id, description FROM channel ORDER BY id")
 	if err != nil {
 		return err
 	}
