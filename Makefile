@@ -15,7 +15,7 @@ clean:
 summary:
 	# TODO tsuka
 	echo "==========ALP============" > summary.txt
-	cat /var/log/nginx/access.log | grep -v '/js' | grep -v '/css' | grep -v '/fonts' | alp --cnt -r --aggregates='/icons/.*','/profile/.*','/channel/\d+' >> "summary.txt"
+	cat /var/log/nginx/access.log | alp --cnt -r --aggregates='/icons/.*','/profile/.*','/channel/\d+','/history/\d+'  >> "summary.txt"
 
 	echo "==========SLOW LOG============" >> summary.txt
 	pt-query-digest --explain 127.0.0.1 -P 3306 -uisucon -pisucon /var/log/mysql/slow.log >> "summary.txt"
