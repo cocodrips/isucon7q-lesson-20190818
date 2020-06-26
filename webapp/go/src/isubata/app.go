@@ -60,6 +60,9 @@ func init() {
 		db_user = "root"
 	}
 	db_password := os.Getenv("ISUBATA_DB_PASSWORD")
+	if db_password == "" {
+		db_password = "root"
+	}
 	if db_password != "" {
 		db_password = ":" + db_password
 	}
@@ -176,6 +179,7 @@ redirect:
 
 const LettersAndDigits = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
+// TODO 遅そう -> 問題ないレベルっぽかった
 func randomString(n int) string {
 	b := make([]byte, n)
 	z := len(LettersAndDigits)
@@ -208,6 +212,9 @@ func getInitialize(c echo.Context) error {
 	db.MustExec("DELETE FROM channel WHERE id > 10")
 	db.MustExec("DELETE FROM message WHERE id > 10000")
 	db.MustExec("DELETE FROM haveread")
+	db.Exec("ALTER TABLE image ADD INDEX ( name )")
+	db.Exec("ALTER TABLE message ADD INDEX ( channel_id )")
+	db.Exec("ALTER TABLE message ADD INDEX ( id, channel_id )")
 	return c.String(204, "")
 }
 
@@ -230,6 +237,7 @@ type ChannelInfo struct {
 	CreatedAt   time.Time `db:"created_at"`
 }
 
+// TODO selectは、id, descriptionだけにする
 func getChannel(c echo.Context) error {
 	user, err := ensureLogin(c)
 	if user == nil {
@@ -240,7 +248,7 @@ func getChannel(c echo.Context) error {
 		return err
 	}
 	channels := []ChannelInfo{}
-	err = db.Select(&channels, "SELECT * FROM channel ORDER BY id")
+	err = db.Select(&channels, "SELECT id, name, description FROM channel ORDER BY id")
 	if err != nil {
 		return err
 	}
@@ -381,6 +389,7 @@ func getMessage(c echo.Context) error {
 		return err
 	}
 
+	// TODO これ100件も必要なのかしら
 	messages, err := queryMessages(chanID, lastID)
 	if err != nil {
 		return err
@@ -417,15 +426,15 @@ func queryChannels() ([]int64, error) {
 
 func queryHaveRead(userID, chID int64) (int64, error) {
 	type HaveRead struct {
-		UserID    int64     `db:"user_id"`
-		ChannelID int64     `db:"channel_id"`
+		//UserID    int64     `db:"user_id"`
+		//ChannelID int64     `db:"channel_id"`
 		MessageID int64     `db:"message_id"`
-		UpdatedAt time.Time `db:"updated_at"`
-		CreatedAt time.Time `db:"created_at"`
+		//UpdatedAt time.Time `db:"updated_at"`
+		//CreatedAt time.Time `db:"created_at"`
 	}
 	h := HaveRead{}
 
-	err := db.Get(&h, "SELECT * FROM haveread WHERE user_id = ? AND channel_id = ?",
+	err := db.Get(&h, "SELECT message_id FROM haveread WHERE user_id = ? AND channel_id = ?",
 		userID, chID)
 
 	if err == sql.ErrNoRows {
@@ -533,6 +542,7 @@ func getHistory(c echo.Context) error {
 	}
 
 	channels := []ChannelInfo{}
+	// TODO channelを全備引いてるのやめたい
 	err = db.Select(&channels, "SELECT * FROM channel ORDER BY id")
 	if err != nil {
 		return err
@@ -555,6 +565,7 @@ func getProfile(c echo.Context) error {
 	}
 
 	channels := []ChannelInfo{}
+	// TODO channel全部引いてるのやめたい
 	err = db.Select(&channels, "SELECT * FROM channel ORDER BY id")
 	if err != nil {
 		return err
@@ -682,6 +693,7 @@ func postProfile(c echo.Context) error {
 	return c.Redirect(http.StatusSeeOther, "/")
 }
 
+// TODO おもすぎる。DBから画像を引き剥がす必要あり。
 func getIcon(c echo.Context) error {
 	var name string
 	var data []byte
@@ -754,7 +766,7 @@ func main() {
 
 	e.GET("add_channel", getAddChannel)
 	e.POST("add_channel", postAddChannel)
-	e.GET("/icons/:file_name", getIcon)
+	//e.GET("/icons/:file_name", getIcon)
 
 	e.Start(":5000")
 }
